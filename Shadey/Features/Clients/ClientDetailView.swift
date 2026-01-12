@@ -5,6 +5,7 @@ struct ClientDetailView: View {
     let inventoryStore: InventoryStore
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppData.self) private var appData
     @State private var showingAddService = false
     @State private var showingEditClient = false
     @State private var showingDeleteClient = false
@@ -61,7 +62,10 @@ struct ClientDetailView: View {
             Text("Delete \(viewModel.client.name)? This can't be undone.")
         }
         .sheet(isPresented: $showingAddService) {
-            ServiceEditorView(inventoryStore: inventoryStore) { draft in
+            ServiceEditorView(
+                inventoryStore: inventoryStore,
+                preferencesStore: appData.formulaBuilderPreferencesStore
+            ) { draft in
                 viewModel.addService(draft: draft)
             }
         }

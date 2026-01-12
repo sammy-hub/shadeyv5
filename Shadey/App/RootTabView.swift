@@ -1,18 +1,32 @@
 import SwiftUI
 
 struct RootTabView: View {
-    let appData: AppData
+    @Bindable var appData: AppData
+
+    init(appData: AppData) {
+        self.appData = appData
+    }
 
     var body: some View {
         TabView {
             Tab("Dashboard", systemImage: "chart.bar") {
                 NavigationStack {
-                    DashboardView(viewModel: DashboardViewModel(inventoryStore: appData.inventoryStore, clientsStore: appData.clientsStore))
+                    DashboardView(
+                        viewModel: DashboardViewModel(
+                            inventoryStore: appData.inventoryStore,
+                            clientsStore: appData.clientsStore
+                        )
+                    )
                 }
             }
             Tab("Inventory", systemImage: "tray.full") {
                 NavigationStack {
-                    InventoryView(viewModel: InventoryViewModel(store: appData.inventoryStore))
+                    InventoryView(
+                        viewModel: InventoryViewModel(
+                            store: appData.inventoryStore,
+                            stockAlertSettingsStore: appData.stockAlertSettingsStore
+                        )
+                    )
                 }
             }
             Tab("Clients", systemImage: "person.2") {
@@ -22,15 +36,30 @@ struct RootTabView: View {
             }
             Tab("Shopping", systemImage: "checklist") {
                 NavigationStack {
-                    ShoppingListView(viewModel: ShoppingListViewModel(store: appData.shoppingListStore))
+                    ShoppingListView(
+                        viewModel: ShoppingListViewModel(
+                            store: appData.shoppingListStore,
+                            inventoryStore: appData.inventoryStore,
+                            preferencesStore: appData.shoppingListPreferencesStore,
+                            stockAlertSettingsStore: appData.stockAlertSettingsStore
+                        )
+                    )
                 }
             }
             Tab("Settings", systemImage: "gearshape") {
                 NavigationStack {
-                    SettingsView(viewModel: SettingsViewModel(), productTypeStore: appData.productTypeStore)
+                    SettingsView(
+                        viewModel: SettingsViewModel(),
+                        productTypeStore: appData.productTypeStore,
+                        inventoryStore: appData.inventoryStore,
+                        shoppingListPreferencesStore: appData.shoppingListPreferencesStore,
+                        stockAlertSettingsStore: appData.stockAlertSettingsStore,
+                        appearanceSettings: appData.appearanceSettings
+                    )
                 }
             }
         }
-        .tint(DesignSystem.accent)
+        .tint(appData.appearanceSettings.accentColor)
+        .preferredColorScheme(appData.appearanceSettings.preferredColorScheme)
     }
 }

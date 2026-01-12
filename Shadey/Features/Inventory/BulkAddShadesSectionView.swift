@@ -21,6 +21,22 @@ struct BulkAddShadesSectionView: View {
                     }
                 }
 
+                if !viewModel.bulkPreview.isEmpty {
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.xSmall) {
+                        Text("Preview (\(viewModel.bulkPreview.count))")
+                            .font(DesignSystem.Typography.subheadline)
+                            .foregroundStyle(DesignSystem.textSecondary)
+                        ForEach(viewModel.bulkPreview) { shade in
+                            Text("\(shade.shadeCode) \(shade.shadeName)".trimmingCharacters(in: .whitespacesAndNewlines))
+                                .font(DesignSystem.Typography.subheadline)
+                                .foregroundStyle(DesignSystem.textPrimary)
+                            if shade.id != viewModel.bulkPreview.last?.id {
+                                Divider()
+                            }
+                        }
+                    }
+                }
+
                 Button("Add List", systemImage: "tray.and.arrow.down") {
                     viewModel.addBulkShades()
                 }

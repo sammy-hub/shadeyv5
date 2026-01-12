@@ -1,7 +1,9 @@
 import SwiftUI
 
 enum DesignSystem {
-    static let accent = Color("AccentColor")
+    static var accent: Color {
+        Color.accentColor
+    }
     static let background = Color("AppBackground")
     static let surface = Color("CardBackground")
     static let secondarySurface = Color("ElevatedBackground")

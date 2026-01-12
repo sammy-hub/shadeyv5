@@ -6,6 +6,7 @@ struct ProductEditorView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: ProductEditorViewModel
+    @State private var showsAdvancedFields = false
 
     init(
         store: InventoryStore,
@@ -34,14 +35,24 @@ struct ProductEditorView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.sectionSpacing) {
                     ProductEditorDetailsSectionView(viewModel: viewModel)
-                    ProductEditorPricingSectionView(viewModel: viewModel)
                     ProductEditorStockSectionView(viewModel: viewModel)
-                    if viewModel.isDeveloperType {
-                        ProductEditorDeveloperStrengthSectionView(viewModel: viewModel)
-                    } else {
-                        ProductEditorDeveloperGuidanceSectionView(viewModel: viewModel)
+                    Button(
+                        showsAdvancedFields ? "Hide Advanced Fields" : "Show Pricing, Developer, Barcode",
+                        systemImage: showsAdvancedFields ? "chevron.up" : "chevron.down"
+                    ) {
+                        showsAdvancedFields.toggle()
                     }
-                    ProductEditorBarcodeSectionView(viewModel: viewModel)
+                    .buttonStyle(.bordered)
+
+                    if showsAdvancedFields {
+                        ProductEditorPricingSectionView(viewModel: viewModel)
+                        if viewModel.isDeveloperType {
+                            ProductEditorDeveloperStrengthSectionView(viewModel: viewModel)
+                        } else if viewModel.supportsDeveloperGuidance {
+                            ProductEditorDeveloperGuidanceSectionView(viewModel: viewModel)
+                        }
+                        ProductEditorBarcodeSectionView(viewModel: viewModel)
+                    }
                 }
                 .padding(.horizontal, DesignSystem.Spacing.pagePadding)
                 .padding(.vertical, DesignSystem.Spacing.large)

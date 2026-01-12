@@ -27,18 +27,6 @@ struct InventoryListContainerView: View {
             }
 
             Section {
-                InventoryFilterBarView(viewModel: viewModel)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(
-                        top: DesignSystem.Spacing.small,
-                        leading: DesignSystem.Spacing.pagePadding,
-                        bottom: DesignSystem.Spacing.small,
-                        trailing: DesignSystem.Spacing.pagePadding
-                    ))
-            }
-
-            Section {
                 InventoryListView(
                     viewModel: viewModel,
                     onEdit: { editingProduct = $0 },

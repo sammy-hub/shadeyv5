@@ -6,7 +6,7 @@ struct ShadeyApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootTabView(appData: appData)
+            AppEntryView(appData: appData)
                 .environment(appData)
                 .environment(\.managedObjectContext, appData.persistence.viewContext)
         }

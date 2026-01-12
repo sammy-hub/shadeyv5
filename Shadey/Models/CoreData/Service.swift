@@ -6,6 +6,11 @@ public final class Service: NSManagedObject {
         let set = formulaItems ?? []
         return set.sorted { $0.product?.resolvedBrand ?? "" < $1.product?.resolvedBrand ?? "" }
     }
+
+    public var formulaGroupsArray: [ServiceFormula] {
+        let set = formulaGroups ?? []
+        return set.sorted { $0.sortOrder < $1.sortOrder }
+    }
 }
 
 extension Service {
@@ -23,5 +28,6 @@ extension Service {
     @NSManaged public var totalCost: Double
     @NSManaged public var client: Client?
     @NSManaged public var developer: Product?
+    @NSManaged public var formulaGroups: Set<ServiceFormula>?
     @NSManaged public var formulaItems: Set<FormulaItem>?
 }

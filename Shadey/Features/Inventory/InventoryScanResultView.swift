@@ -35,7 +35,7 @@ struct InventoryScanResultView: View {
                     OptionalNumberField("Amount", value: $amount, format: .number)
                 }
 
-                Button("Apply") {
+                Button("Apply & Continue") {
                     guard let amount else { return }
                     store.adjustStock(for: product, by: amount * adjustmentType.multiplier)
                     onDone()

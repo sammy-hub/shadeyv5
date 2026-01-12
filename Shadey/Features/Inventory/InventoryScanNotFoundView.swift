@@ -13,7 +13,7 @@ struct InventoryScanNotFoundView: View {
                 Text("Barcode: \(barcode)")
                     .font(DesignSystem.Typography.subheadline)
                     .foregroundStyle(DesignSystem.textSecondary)
-                Button("Add Product", systemImage: "plus") {
+                Button("Quick Add", systemImage: "plus") {
                     onAddProduct()
                 }
                 .buttonStyle(.borderedProminent)

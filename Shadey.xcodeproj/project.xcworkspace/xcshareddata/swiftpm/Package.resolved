@@ -1,0 +1,33 @@
+{
+  "originHash" : "32d2b4754b2b19e9ea6c305d6eed1527870f19fcf1eb7aa52f0b7e9c9566473a",
+  "pins" : [
+    {
+      "identity" : "chartview",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apppear/chartview.git",
+      "state" : {
+        "revision" : "9115a992c91fa19cbb4f2241084240d38654a1fc",
+        "version" : "1.5.5"
+      }
+    },
+    {
+      "identity" : "onboardingui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/KC-2001MS/OnboardingUI.git",
+      "state" : {
+        "revision" : "032555b18e77d64fb43e34fc053e249522f0ad7c",
+        "version" : "1.0.1"
+      }
+    },
+    {
+      "identity" : "swift-table",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sivx76/Swift-Table.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "14810e7137a10c69e7fbc0c095abf000b4a790e6"
+      }
+    }
+  ],
+  "version" : 3
+}

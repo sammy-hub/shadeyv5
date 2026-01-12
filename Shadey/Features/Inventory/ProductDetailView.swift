@@ -3,6 +3,7 @@ import SwiftUI
 struct ProductDetailView: View {
     let product: Product
     let store: InventoryStore
+    let stockAlertSettingsStore: StockAlertSettingsStore
 
     @State private var showingEditor = false
     @State private var showingAdjustment = false
@@ -10,6 +11,8 @@ struct ProductDetailView: View {
     var body: some View {
         let typeName = store.productTypeStore.displayName(for: product.resolvedProductTypeId)
         let isDeveloper = store.productTypeStore.isDeveloperType(product.resolvedProductTypeId)
+        let stockStatus = stockAlertSettingsStore.stockStatus(for: product)
+        let thresholdDetails = stockAlertSettingsStore.thresholdDetails(for: product)
 
         ScrollView {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.sectionSpacing) {
@@ -29,14 +32,21 @@ struct ProductDetailView: View {
                                     .foregroundStyle(DesignSystem.textSecondary)
                             }
                             Spacer()
-                            StockStatusBadgeView(status: product.stockStatus)
+                            StockStatusBadgeView(status: stockStatus)
                         }
-                        KeyValueRowView(title: "Stock", value: "\(product.stockQuantity.formatted(.number)) \(product.resolvedUnit.displayName)")
+                        KeyValueRowView(
+                            title: "Units in stock",
+                            value: product.stockQuantity.formatted(.number)
+                        )
                         KeyValueRowView(title: "Cost per unit", value: product.costPerUnit.formatted(CurrencyFormat.inventory))
                         KeyValueRowView(title: "Purchase price", value: product.resolvedPurchasePrice.formatted(CurrencyFormat.inventory))
-                        KeyValueRowView(title: "Quantity per unit", value: "\(product.resolvedQuantityPerUnit.formatted(.number)) \(product.resolvedUnit.displayName)")
-                        KeyValueRowView(title: "Low stock", value: product.lowStockThreshold.formatted(.number))
+                        KeyValueRowView(title: "Amount per unit", value: "\(product.resolvedQuantityPerUnit.formatted(.number)) \(product.resolvedUnit.displayName)")
+                        let lowStockValue = thresholdDetails.value > 0
+                            ? "\(thresholdDetails.value.formatted(.number)) \(product.resolvedUnit.displayName) (\(thresholdDetails.source.displayName))"
+                            : "Not set"
+                        KeyValueRowView(title: "Low stock", value: lowStockValue)
                         KeyValueRowView(title: "Overstock", value: product.overstockThreshold.formatted(.number))
+                        KeyValueRowView(title: "Auto-add to shopping", value: product.autoAddDisabled ? "Off" : "On")
                         if let barcode = product.barcode {
                             KeyValueRowView(title: "Barcode", value: barcode)
                         }

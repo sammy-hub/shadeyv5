@@ -13,7 +13,14 @@ struct InventoryLineSection: Identifiable {
     let overstockCount: Int
     let fillRatio: Double
 
-    init(line: ColorLine?, brand: String, name: String, shades: [Product]) {
+    init(
+        line: ColorLine?,
+        brand: String,
+        name: String,
+        shades: [Product],
+        stockStatus: (Product) -> StockStatus,
+        lowThreshold: (Product) -> Double
+    ) {
         self.line = line
         self.brand = brand
         self.name = name
@@ -27,11 +34,11 @@ struct InventoryLineSection: Identifiable {
         self.totalStock = totalStock
         let inStockCount = sortedShades.filter { $0.stockQuantity > 0 }.count
         self.inStockCount = inStockCount
-        let lowStockCount = sortedShades.filter { $0.stockStatus == .low }.count
+        let lowStockCount = sortedShades.filter { stockStatus($0) == .low }.count
         self.lowStockCount = lowStockCount
-        let overstockCount = sortedShades.filter { $0.stockStatus == .overstock }.count
+        let overstockCount = sortedShades.filter { stockStatus($0) == .overstock }.count
         self.overstockCount = overstockCount
-        let lowThresholdTotal = sortedShades.reduce(0) { $0 + $1.lowStockThreshold }
+        let lowThresholdTotal = sortedShades.reduce(0) { $0 + lowThreshold($1) }
         let ratio: Double
         if lowThresholdTotal > 0 {
             ratio = min(totalStock / lowThresholdTotal, 1)
@@ -44,7 +51,7 @@ struct InventoryLineSection: Identifiable {
         if let lineId = line?.id {
             id = lineId.uuidString
         } else {
-            id = "ungrouped-\(brand)"
+            id = "\(brand)|\(name)".lowercased()
         }
     }
 
@@ -54,7 +61,7 @@ struct InventoryLineSection: Identifiable {
 
     var displayTitle: String {
         if line == nil {
-            return "Unassigned"
+            return name
         }
         return name
     }

@@ -86,54 +86,64 @@ struct ColorLineDefaultsSectionView: View {
                     .pickerStyle(.menu)
                 }
 
-                FieldContainerView {
-                    OptionalNumberField("Quantity per Unit", value: $viewModel.lineDraft.quantityPerUnit, format: .number)
-                }
-
-                FieldContainerView {
-                    OptionalNumberField("Purchase Price", value: $viewModel.lineDraft.purchasePrice, format: CurrencyFormat.inventory)
-                }
-
-                if !viewModel.isLineDeveloperType {
-                    if viewModel.developerOptions.isEmpty {
-                        Text("Add a developer product to assign a default.")
-                            .font(DesignSystem.Typography.caption)
-                            .foregroundStyle(DesignSystem.textSecondary)
-                        Button("Add Developer", systemImage: "plus") {
-                            onAddDeveloper()
+                DisclosureGroup("Defaults") {
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
+                        VStack(alignment: .leading, spacing: DesignSystem.Spacing.xSmall) {
+                            FieldContainerView {
+                                OptionalNumberField("Amount in each unit", value: $viewModel.lineDraft.quantityPerUnit, format: .number)
+                            }
+                            Text("Enter how many \(viewModel.lineDraft.unit.displayName) are in one bottle or tube.")
+                                .font(DesignSystem.Typography.caption)
+                                .foregroundStyle(DesignSystem.textSecondary)
                         }
-                        .buttonStyle(.bordered)
-                    } else {
+
                         FieldContainerView {
-                            Picker("Default Developer", selection: $viewModel.lineDraft.defaultDeveloperId) {
-                                Text("Auto (best match)")
-                                    .tag(nil as UUID?)
-                                ForEach(viewModel.developerOptions, id: \.id) { developer in
-                                    Text(developer.displayName)
-                                        .tag(Optional(developer.id))
+                            OptionalNumberField("Purchase Price", value: $viewModel.lineDraft.purchasePrice, format: CurrencyFormat.inventory)
+                        }
+
+                        if !viewModel.isLineDeveloperType {
+                            if viewModel.developerOptions.isEmpty {
+                                Text("Add a developer product to assign a default.")
+                                    .font(DesignSystem.Typography.caption)
+                                    .foregroundStyle(DesignSystem.textSecondary)
+                                Button("Add Developer", systemImage: "plus") {
+                                    onAddDeveloper()
+                                }
+                                .buttonStyle(.bordered)
+                            } else {
+                                FieldContainerView {
+                                    Picker("Default Developer", selection: $viewModel.lineDraft.defaultDeveloperId) {
+                                        Text("No default")
+                                            .tag(nil as UUID?)
+                                        ForEach(viewModel.developerOptions, id: \.id) { developer in
+                                            Text(viewModel.developerLabel(for: developer))
+                                                .tag(Optional(developer.id))
+                                        }
+                                    }
+                                    .pickerStyle(.menu)
                                 }
                             }
-                            .pickerStyle(.menu)
+
+                            DeveloperRatioFieldView(
+                                title: "Developer : Color",
+                                developerPart: $viewModel.developerRatioDeveloperPart,
+                                colorPart: $viewModel.developerRatioColorPart,
+                                helperText: "Sets the default mix for services."
+                            )
+                        }
+
+                        if let cost = viewModel.lineCostPerUnit {
+                            Text("Cost per \(viewModel.lineDraft.unit.displayName): \(cost.formatted(CurrencyFormat.inventory))")
+                                .font(DesignSystem.Typography.caption)
+                                .foregroundStyle(DesignSystem.textSecondary)
+                        }
+                        if let hint = viewModel.lineDefaultsHint {
+                            Text(hint)
+                                .font(DesignSystem.Typography.caption)
+                                .foregroundStyle(DesignSystem.textSecondary)
                         }
                     }
-
-                    DeveloperRatioFieldView(
-                        title: "Developer : Color",
-                        developerPart: $viewModel.developerRatioDeveloperPart,
-                        colorPart: $viewModel.developerRatioColorPart,
-                        helperText: "Sets the default mix for services."
-                    )
-                }
-
-                if let cost = viewModel.lineCostPerUnit {
-                    Text("Cost per \(viewModel.lineDraft.unit.displayName): \(cost.formatted(CurrencyFormat.inventory))")
-                        .font(DesignSystem.Typography.caption)
-                        .foregroundStyle(DesignSystem.textSecondary)
-                }
-                if let hint = viewModel.lineDefaultsHint {
-                    Text(hint)
-                        .font(DesignSystem.Typography.caption)
-                        .foregroundStyle(DesignSystem.textSecondary)
+                    .padding(.top, DesignSystem.Spacing.small)
                 }
             }
         }

@@ -14,4 +14,5 @@ extension FormulaItem {
     @NSManaged public var ratioPart: Double
     @NSManaged public var product: Product?
     @NSManaged public var service: Service?
+    @NSManaged public var serviceFormula: ServiceFormula?
 }

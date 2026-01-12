@@ -7,6 +7,7 @@ struct InventoryRootView: View {
     @Binding var editingProduct: Product?
     @Binding var adjustingProduct: Product?
     @Binding var deletingProduct: Product?
+    @State private var addCategory: InventoryCategory?
 
     var body: some View {
         let deleteDialogBinding = Binding<Bool>(
@@ -34,10 +35,12 @@ struct InventoryRootView: View {
             .navigationTitle("Inventory")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    InventorySortMenuView(sortOption: $viewModel.sortOption)
                     Button("Scan", systemImage: "barcode.viewfinder") {
                         showingScanner = true
                     }
                     Button("Add", systemImage: "plus") {
+                        addCategory = nil
                         showingAddProduct = true
                     }
                 }
@@ -45,13 +48,30 @@ struct InventoryRootView: View {
             .searchable(text: $viewModel.searchText, prompt: "Search products")
             .navigationDestination(for: UUID.self) { id in
                 if let product = viewModel.product(for: id) {
-                    ProductDetailView(product: product, store: viewModel.store)
+                    ProductDetailView(
+                        product: product,
+                        store: viewModel.store,
+                        stockAlertSettingsStore: viewModel.stockAlertSettingsStore
+                    )
                 }
+            }
+            .navigationDestination(for: InventoryCategory.self) { category in
+                InventoryCategoryDetailView(
+                    viewModel: viewModel,
+                    category: category,
+                    onEdit: { editingProduct = $0 },
+                    onDeduct: { adjustingProduct = $0 },
+                    onDelete: { deletingProduct = $0 },
+                    onAdd: {
+                        addCategory = category
+                        showingAddProduct = true
+                    }
+                )
             }
 
         let sheetView = navigationView
             .sheet(isPresented: $showingAddProduct) {
-                InventoryCreationView(store: viewModel.store)
+                InventoryCreationView(store: viewModel.store, initialCategory: addCategory)
             }
             .sheet(item: $editingProduct) { product in
                 ProductEditorView(store: viewModel.store, product: product)

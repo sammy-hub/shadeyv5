@@ -54,7 +54,23 @@ struct ClientsView: View {
         .scrollIndicators(.hidden)
         .navigationTitle("Clients")
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Menu {
+                    ForEach(ClientsViewModel.SortOption.allCases) { option in
+                        Button {
+                            viewModel.sortOption = option
+                        } label: {
+                            if viewModel.sortOption == option {
+                                Label(option.displayName, systemImage: "checkmark")
+                            } else {
+                                Text(option.displayName)
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Sort", systemImage: "arrow.up.arrow.down")
+                }
+
                 Button("Add", systemImage: "plus") {
                     showingAddClient = true
                 }

@@ -3,10 +3,25 @@ import SwiftUI
 struct SettingsView: View {
     @State private var viewModel: SettingsViewModel
     let productTypeStore: ProductTypeStore
+    let inventoryStore: InventoryStore
+    @Bindable var shoppingListPreferencesStore: ShoppingListPreferencesStore
+    let stockAlertSettingsStore: StockAlertSettingsStore
+    @Bindable var appearanceSettings: AppearanceSettings
 
-    init(viewModel: SettingsViewModel, productTypeStore: ProductTypeStore) {
+    init(
+        viewModel: SettingsViewModel,
+        productTypeStore: ProductTypeStore,
+        inventoryStore: InventoryStore,
+        shoppingListPreferencesStore: ShoppingListPreferencesStore,
+        stockAlertSettingsStore: StockAlertSettingsStore,
+        appearanceSettings: AppearanceSettings
+    ) {
         _viewModel = State(initialValue: viewModel)
         self.productTypeStore = productTypeStore
+        self.inventoryStore = inventoryStore
+        self.shoppingListPreferencesStore = shoppingListPreferencesStore
+        self.stockAlertSettingsStore = stockAlertSettingsStore
+        self.appearanceSettings = appearanceSettings
     }
 
     var body: some View {
@@ -28,10 +43,43 @@ struct SettingsView: View {
                 Toggle("Notifications", isOn: $viewModel.notificationsEnabled)
             }
 
+            Section("Appearance") {
+                Picker("Theme", selection: $appearanceSettings.themePreference) {
+                    ForEach(AppearanceSettings.ThemePreference.allCases) { preference in
+                        Text(preference.displayName)
+                            .tag(preference)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                Picker("Accent Color", selection: $appearanceSettings.accentSelection) {
+                    ForEach(AppearanceSettings.AccentSelection.allCases) { selection in
+                        Label(selection.displayName, systemImage: "circle.fill")
+                            .foregroundStyle(selection.color)
+                            .tag(selection)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
             Section("Inventory") {
                 NavigationLink("Product Types") {
                     ProductTypeManagerView(store: productTypeStore)
                 }
+                NavigationLink("Color Lines") {
+                    ColorLineManagerView(store: inventoryStore)
+                }
+                NavigationLink("Stock Alerts") {
+                    StockAlertSettingsView(
+                        stockAlertSettingsStore: stockAlertSettingsStore,
+                        productTypeStore: productTypeStore,
+                        inventoryStore: inventoryStore
+                    )
+                }
+            }
+
+            Section("Shopping List") {
+                Toggle("Auto-restock on purchase", isOn: $shoppingListPreferencesStore.autoRestockOnPurchase)
             }
 
             Section {

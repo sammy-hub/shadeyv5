@@ -62,6 +62,25 @@ final class ProductEditorViewModel {
         store.productTypeStore.isDeveloperType(draft.productTypeId)
     }
 
+    var isLightenerType: Bool {
+        draft.productTypeId == ProductType.lightener.rawValue
+    }
+
+    var isTreatmentType: Bool {
+        draft.productTypeId == ProductType.treatment.rawValue
+    }
+
+    var isHairColorType: Bool {
+        if let type = ProductType(rawValue: draft.productTypeId) {
+            return type == .permanent || type == .demiPermanent || type == .semiPermanent
+        }
+        return true
+    }
+
+    var supportsDeveloperGuidance: Bool {
+        !isDeveloperType && !isTreatmentType
+    }
+
     var isSaveEnabled: Bool {
         isBrandValid && isNameValid
     }
@@ -71,7 +90,10 @@ final class ProductEditorViewModel {
     }
 
     var isNameValid: Bool {
-        !trimmed(draft.name).isEmpty || !trimmed(draft.shadeCode).isEmpty
+        if isHairColorType {
+            return !trimmed(draft.name).isEmpty || !trimmed(draft.shadeCode).isEmpty
+        }
+        return !trimmed(draft.name).isEmpty
     }
 
     var costPerUnit: Double? {
@@ -83,10 +105,10 @@ final class ProductEditorViewModel {
 
     var pricingHint: String? {
         if draft.quantityPerUnit == nil || draft.purchasePrice == nil {
-            return "Add quantity and price to calculate cost per unit."
+            return "Add the amount and price to calculate cost per unit."
         }
         if let quantity = draft.quantityPerUnit, quantity <= 0 {
-            return "Quantity per unit must be greater than 0."
+            return "Amount per unit must be greater than 0."
         }
         if let price = draft.purchasePrice, price < 0 {
             return "Purchase price can’t be negative."
@@ -100,6 +122,7 @@ final class ProductEditorViewModel {
     }
 
     var availableShades: [String] {
+        guard isHairColorType else { return [] }
         let products = store.products.filter { product in
             let brand = trimmed(draft.brand)
             guard !brand.isEmpty else { return true }

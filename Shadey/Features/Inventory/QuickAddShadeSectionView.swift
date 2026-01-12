@@ -20,12 +20,15 @@ struct QuickAddShadeSectionView: View {
                 }
 
                 FieldContainerView {
-                    TextField("Notes (optional)", text: $viewModel.shadeDraft.notes, axis: .vertical)
-                        .lineLimit(3, reservesSpace: true)
+                    OptionalNumberField("Stock (optional)", value: $viewModel.shadeDraft.stockQuantity, format: .number)
                 }
 
-                FieldContainerView {
-                    OptionalNumberField("Stock (optional)", value: $viewModel.shadeDraft.stockQuantity, format: .number)
+                DisclosureGroup("More details") {
+                    FieldContainerView {
+                        TextField("Notes (optional)", text: $viewModel.shadeDraft.notes, axis: .vertical)
+                            .lineLimit(3, reservesSpace: true)
+                    }
+                    .padding(.top, DesignSystem.Spacing.small)
                 }
 
                 if !viewModel.isShadeValid {
@@ -40,23 +43,6 @@ struct QuickAddShadeSectionView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(!viewModel.canAddShade)
 
-                if !viewModel.pendingShades.isEmpty {
-                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
-                        Text("Queued Shades (\(viewModel.pendingShades.count))")
-                            .font(DesignSystem.Typography.subheadline)
-                            .foregroundStyle(DesignSystem.textSecondary)
-                        ForEach(viewModel.pendingShades) { shade in
-                            AddedShadeRowView(shade: shade) {
-                                viewModel.duplicateShade(shade)
-                            } onRemove: {
-                                viewModel.removeShade(shade)
-                            }
-                            if shade.id != viewModel.pendingShades.last?.id {
-                                Divider()
-                            }
-                        }
-                    }
-                }
             }
         }
     }

@@ -6,15 +6,22 @@ struct ProductEditorPricingSectionView: View {
     var body: some View {
         SurfaceCardView {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.medium) {
-                SectionHeaderView(title: "Pricing", subtitle: "Keep costs consistent across services.")
+                SectionHeaderView(title: "Pricing", subtitle: "Keep costs aligned between services and purchasing.")
 
-                FieldContainerView {
-                    OptionalNumberField("Quantity per Unit", value: $viewModel.draft.quantityPerUnit, format: .number)
-                }
+                NumberEntryRow(
+                    "Quantity per unit",
+                    helper: "How many \(viewModel.draft.unit.displayName) come in a single bottle or tube.",
+                    value: $viewModel.draft.quantityPerUnit,
+                    format: .number
+                )
 
-                FieldContainerView {
-                    OptionalNumberField("Purchase Price", value: $viewModel.draft.purchasePrice, format: CurrencyFormat.inventory)
-                }
+                NumberEntryRow(
+                    "Purchase price",
+                    helper: "The amount you paid for the complete unit.",
+                    value: $viewModel.draft.purchasePrice,
+                    format: CurrencyFormat.inventory,
+                    keyboardType: .decimalPad
+                )
 
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.xSmall) {
                     Text("Cost per \(viewModel.draft.unit.displayName)")
@@ -23,6 +30,9 @@ struct ProductEditorPricingSectionView: View {
                     Text(costPerUnitText)
                         .font(DesignSystem.Typography.headline)
                         .foregroundStyle(DesignSystem.textPrimary)
+                    Text("Used for estimating formulas and reports.")
+                        .font(DesignSystem.Typography.caption)
+                        .foregroundStyle(DesignSystem.textSecondary)
                 }
 
                 if let hint = viewModel.pricingHint {

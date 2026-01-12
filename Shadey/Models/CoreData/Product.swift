@@ -113,6 +113,7 @@ extension Product {
     }
 
     @NSManaged public var barcode: String?
+    @NSManaged public var autoAddDisabled: Bool
     @NSManaged public var brand: String
     @NSManaged public var createdAt: Date
     @NSManaged public var defaultDeveloperRatio: Double
@@ -137,6 +138,7 @@ extension Product {
     @NSManaged public var updatedAt: Date
     @NSManaged public var colorLine: ColorLine?
     @NSManaged public var defaultDeveloperLines: NSSet?
+    @NSManaged public var developerFormulas: NSSet?
     @NSManaged public var developerServices: NSSet?
     @NSManaged public var formulaItems: NSSet?
     @NSManaged public var shoppingListItems: NSSet?

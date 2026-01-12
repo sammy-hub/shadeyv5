@@ -7,14 +7,14 @@ struct InventoryEmptyStateView: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label(title, systemImage: "tray")
+            Label(title, systemImage: "plus.circle")
         } description: {
             Text(message)
         } actions: {
             Button("Add Product", systemImage: "plus") {
                 onAdd()
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.glass)
         }
         .padding(.vertical, DesignSystem.Spacing.xxLarge)
     }

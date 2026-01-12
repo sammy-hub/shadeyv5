@@ -4,9 +4,13 @@ struct ProductEditorDetailsSectionView: View {
     @Bindable var viewModel: ProductEditorViewModel
 
     var body: some View {
+        let subtitle = viewModel.isHairColorType
+            ? "Brand, shade, type, and unit."
+            : "Brand, line, type, and unit."
+
         SurfaceCardView {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.medium) {
-                SectionHeaderView(title: "Details", subtitle: "Brand, shade, type, and unit.")
+                SectionHeaderView(title: "Details", subtitle: subtitle)
 
                 TypeaheadFieldView(
                     "Brand",
@@ -82,27 +86,39 @@ struct ProductEditorDetailsSectionView: View {
                 .disabled(viewModel.draft.brand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 .disabled(viewModel.hasColorLine)
 
-                FieldContainerView {
-                    TextField("Shade Code", text: $viewModel.draft.shadeCode)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                }
+                if viewModel.isHairColorType {
+                    FieldContainerView {
+                        TextField("Shade Code", text: $viewModel.draft.shadeCode)
+                            .textInputAutocapitalization(.characters)
+                            .autocorrectionDisabled()
+                    }
 
-                TypeaheadFieldView(
-                    "Shade Name",
-                    text: $viewModel.draft.name,
-                    suggestions: viewModel.shadeSuggestions,
-                    emptyHint: "No matching shades yet.",
-                    showCreateOption: viewModel.shouldOfferCreateShade,
-                    createLabel: "Create",
-                    onSelect: viewModel.selectShade,
-                    onCreate: viewModel.selectShade
-                )
+                    TypeaheadFieldView(
+                        "Shade Name",
+                        text: $viewModel.draft.name,
+                        suggestions: viewModel.shadeSuggestions,
+                        emptyHint: "No matching shades yet.",
+                        showCreateOption: viewModel.shouldOfferCreateShade,
+                        createLabel: "Create",
+                        onSelect: viewModel.selectShade,
+                        onCreate: viewModel.selectShade
+                    )
 
-                if !viewModel.isNameValid {
-                    Text("Shade code or name is required.")
-                        .font(DesignSystem.Typography.caption)
-                        .foregroundStyle(DesignSystem.warning)
+                    if !viewModel.isNameValid {
+                        Text("Shade code or name is required.")
+                            .font(DesignSystem.Typography.caption)
+                            .foregroundStyle(DesignSystem.warning)
+                    }
+                } else {
+                    FieldContainerView {
+                        TextField("Line", text: $viewModel.draft.name)
+                    }
+
+                    if !viewModel.isNameValid {
+                        Text("Line is required.")
+                            .font(DesignSystem.Typography.caption)
+                            .foregroundStyle(DesignSystem.warning)
+                    }
                 }
 
                 FieldContainerView {

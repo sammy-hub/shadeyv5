@@ -2,27 +2,65 @@ import SwiftUI
 
 struct InventoryCreationView: View {
     let store: InventoryStore
+    let initialCategory: InventoryCategory?
 
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: InventoryCreationViewModel
     @State private var showsDeveloperEditor = false
+    @State private var addMode: InventoryAddMode = .fast
 
-    init(store: InventoryStore) {
+    init(store: InventoryStore, initialCategory: InventoryCategory? = nil) {
         self.store = store
-        _viewModel = State(initialValue: InventoryCreationViewModel(store: store))
+        self.initialCategory = initialCategory
+        _viewModel = State(
+            initialValue: InventoryCreationViewModel(
+                store: store,
+                initialCategory: initialCategory ?? .hairColor
+            )
+        )
     }
 
     var body: some View {
         @Bindable var viewModel = viewModel
+        let categoryBinding = Binding<InventoryCategory>(
+            get: { viewModel.selectedCategory },
+            set: { viewModel.updateCategory($0) }
+        )
 
         return NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.sectionSpacing) {
-                    ColorLineDefaultsSectionView(viewModel: viewModel) {
-                        showsDeveloperEditor = true
+                    Picker("Category", selection: categoryBinding) {
+                        ForEach(InventoryCategory.allCases) { category in
+                            Text(category.displayName)
+                                .tag(category)
+                        }
                     }
-                    QuickAddShadeSectionView(viewModel: viewModel)
-                    BulkAddShadesSectionView(viewModel: viewModel)
+                    .pickerStyle(.segmented)
+
+                    if viewModel.selectedCategory == .hairColor {
+                        ColorLineDefaultsSectionView(viewModel: viewModel) {
+                            showsDeveloperEditor = true
+                        }
+
+                        Picker("Add Mode", selection: $addMode) {
+                            ForEach(InventoryAddMode.allCases) { mode in
+                                Text(mode.displayName)
+                                    .tag(mode)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+
+                        if addMode == .fast {
+                            QuickAddShadeSectionView(viewModel: viewModel)
+                        } else {
+                            BulkAddShadesSectionView(viewModel: viewModel)
+                        }
+
+                        QueuedShadesSectionView(viewModel: viewModel)
+                    } else {
+                        InventorySingleProductSectionView(viewModel: viewModel, category: viewModel.selectedCategory)
+                    }
                 }
                 .padding(.horizontal, DesignSystem.Spacing.pagePadding)
                 .padding(.vertical, DesignSystem.Spacing.large)

@@ -7,12 +7,20 @@ final class ProductEditorViewModelTests: XCTestCase {
     private var context: NSManagedObjectContext!
     private var inventoryStore: InventoryStore!
     private var shoppingListStore: ShoppingListStore!
+    private var stockAlertSettingsStore: StockAlertSettingsStore!
+    private var shoppingListPreferencesStore: ShoppingListPreferencesStore!
 
     override func setUp() {
         super.setUp()
         let persistence = PersistenceController(inMemory: true)
         context = persistence.viewContext
-        shoppingListStore = ShoppingListStore(context: context)
+        stockAlertSettingsStore = StockAlertSettingsStore()
+        shoppingListPreferencesStore = ShoppingListPreferencesStore()
+        shoppingListStore = ShoppingListStore(
+            context: context,
+            stockAlertSettingsStore: stockAlertSettingsStore,
+            preferencesStore: shoppingListPreferencesStore
+        )
         inventoryStore = InventoryStore(
             context: context,
             shoppingListStore: shoppingListStore,
@@ -26,6 +34,8 @@ final class ProductEditorViewModelTests: XCTestCase {
         context = nil
         inventoryStore = nil
         shoppingListStore = nil
+        stockAlertSettingsStore = nil
+        shoppingListPreferencesStore = nil
         super.tearDown()
     }
 
@@ -82,6 +92,7 @@ final class ProductEditorViewModelTests: XCTestCase {
         product.recommendedDeveloperStrength = 0
         product.createdAt = .now
         product.updatedAt = .now
+        product.autoAddDisabled = false
         return product
     }
 }

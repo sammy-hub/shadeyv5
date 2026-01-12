@@ -16,6 +16,7 @@ struct ProductDraft {
     var developerStrength: DeveloperStrength?
     var defaultDeveloperRatio: Double?
     var recommendedDeveloperStrength: DeveloperStrength?
+    var autoAddDisabled: Bool
 
     init(
         name: String = "",
@@ -32,7 +33,8 @@ struct ProductDraft {
         barcode: String = "",
         developerStrength: DeveloperStrength? = nil,
         defaultDeveloperRatio: Double? = nil,
-        recommendedDeveloperStrength: DeveloperStrength? = nil
+        recommendedDeveloperStrength: DeveloperStrength? = nil,
+        autoAddDisabled: Bool = false
     ) {
         self.name = name
         self.shadeCode = shadeCode
@@ -49,6 +51,7 @@ struct ProductDraft {
         self.developerStrength = developerStrength
         self.defaultDeveloperRatio = defaultDeveloperRatio
         self.recommendedDeveloperStrength = recommendedDeveloperStrength
+        self.autoAddDisabled = autoAddDisabled
     }
 
     init(product: Product) {
@@ -67,5 +70,6 @@ struct ProductDraft {
         developerStrength = DeveloperStrength(rawValue: product.developerStrength)
         defaultDeveloperRatio = product.resolvedDefaultDeveloperRatio
         recommendedDeveloperStrength = DeveloperStrength(rawValue: product.recommendedDeveloperStrength)
+        autoAddDisabled = product.autoAddDisabled
     }
 }

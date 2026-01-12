@@ -5,6 +5,7 @@ import Observation
 @Observable
 final class InventoryViewModel {
     let store: InventoryStore
+    let stockAlertSettingsStore: StockAlertSettingsStore
     var searchText: String = "" {
         didSet {
             scheduleSearchDebounce()
@@ -16,8 +17,9 @@ final class InventoryViewModel {
     var selectedTypeId: String?
     private var searchTask: Task<Void, Never>?
 
-    init(store: InventoryStore) {
+    init(store: InventoryStore, stockAlertSettingsStore: StockAlertSettingsStore) {
         self.store = store
+        self.stockAlertSettingsStore = stockAlertSettingsStore
     }
 
     var products: [Product] {
@@ -38,11 +40,11 @@ final class InventoryViewModel {
     }
 
     var lowStockCount: Int {
-        store.products.filter { $0.stockStatus == .low }.count
+        store.products.filter { stockStatus(for: $0) == .low }.count
     }
 
     var overstockCount: Int {
-        store.products.filter { $0.stockStatus == .overstock }.count
+        store.products.filter { stockStatus(for: $0) == .overstock }.count
     }
 
     var availableBrands: [String] {
@@ -61,21 +63,56 @@ final class InventoryViewModel {
     }
 
     var lineSections: [InventoryLineSection] {
-        let filteredProducts = products
+        let filteredProducts = products(in: .hairColor)
         guard !filteredProducts.isEmpty else { return [] }
+        return lineSections(for: .hairColor)
+    }
+
+    var categorySummaries: [InventoryCategorySummary] {
+        InventoryCategory.allCases.map { category in
+            let filteredProducts = products(in: category)
+            let lineCount = countLines(in: filteredProducts, category: category)
+            let lowStockCount = filteredProducts.filter { stockStatus(for: $0) == .low }.count
+            let totalValue = filteredProducts.reduce(0) { $0 + ($1.stockQuantity * $1.costPerUnit) }
+            return InventoryCategorySummary(
+                category: category,
+                productCount: filteredProducts.count,
+                lineCount: lineCount,
+                lowStockCount: lowStockCount,
+                totalValue: totalValue
+            )
+        }
+    }
+
+    func products(in category: InventoryCategory) -> [Product] {
+        products.filter { categoryForProduct($0) == category }
+    }
+
+    func lineSections(for category: InventoryCategory) -> [InventoryLineSection] {
+        let filteredProducts = products(in: category)
+        guard !filteredProducts.isEmpty else { return [] }
+
         let grouped = Dictionary(grouping: filteredProducts) { product in
-            if let lineId = product.colorLine?.id {
+            if category == .hairColor, let lineId = product.colorLine?.id {
                 return "line-\(lineId.uuidString)"
             }
-            return "ungrouped-\(product.resolvedBrand)"
+            let name = product.colorLine?.name ?? product.name
+            return "\(product.resolvedBrand)|\(name)"
         }
 
         let sections = grouped.values.compactMap { shades -> InventoryLineSection? in
             guard let first = shades.first else { return nil }
-            let line = shades.compactMap(\.colorLine).first
+            let line = category == .hairColor ? shades.compactMap(\.colorLine).first : nil
             let brand = line?.brand ?? first.resolvedBrand
-            let name = line?.name ?? "Unassigned"
-            return InventoryLineSection(line: line, brand: brand, name: name, shades: shades)
+            let name = line?.name ?? first.name
+            return InventoryLineSection(
+                line: line,
+                brand: brand,
+                name: name.isEmpty ? "Unnamed" : name,
+                shades: shades,
+                stockStatus: stockStatus(for:),
+                lowThreshold: effectiveLowStockThreshold(for:)
+            )
         }
 
         return sections.sorted { lhs, rhs in
@@ -88,6 +125,18 @@ final class InventoryViewModel {
 
     func product(for id: UUID) -> Product? {
         store.product(id: id)
+    }
+
+    func stockStatus(for product: Product) -> StockStatus {
+        stockAlertSettingsStore.stockStatus(for: product)
+    }
+
+    func effectiveLowStockThreshold(for product: Product) -> Double {
+        stockAlertSettingsStore.threshold(for: product)
+    }
+
+    func thresholdDetails(for product: Product) -> StockAlertSettingsStore.ThresholdDetails {
+        stockAlertSettingsStore.thresholdDetails(for: product)
     }
 
     func refresh() {
@@ -117,5 +166,32 @@ final class InventoryViewModel {
                 self?.debouncedSearchText = query
             }
         }
+    }
+
+    private func categoryForProduct(_ product: Product) -> InventoryCategory {
+        if let type = ProductType(rawValue: product.resolvedProductTypeId) {
+            switch type {
+            case .developer:
+                return .developer
+            case .lightener:
+                return .lightener
+            case .treatment:
+                return .treatment
+            case .permanent, .demiPermanent, .semiPermanent:
+                return .hairColor
+            }
+        }
+        return .hairColor
+    }
+
+    private func countLines(in products: [Product], category: InventoryCategory) -> Int {
+        let identifiers = Set(products.map { product in
+            if category == .hairColor, let lineId = product.colorLine?.id {
+                return "line-\(lineId.uuidString)"
+            }
+            let name = product.colorLine?.name ?? product.name
+            return "\(product.resolvedBrand)|\(name)"
+        })
+        return identifiers.count
     }
 }

@@ -5,12 +5,14 @@ import Observation
 @Observable
 final class InventoryCreationViewModel {
     private let store: InventoryStore
+    var selectedCategory: InventoryCategory
     var lineDraft: ColorLineDraft
     var productTypeQuery: String
     var shadeDraft: ShadeDraft
     var pendingShades: [ShadeDraft]
     var bulkInput: String
     var selectedLine: ColorLine?
+    var singleProductDraft: ProductDraft
     var developerRatioDeveloperPart: Double? {
         didSet {
             updateDeveloperRatioFromParts()
@@ -21,19 +23,36 @@ final class InventoryCreationViewModel {
             updateDeveloperRatioFromParts()
         }
     }
+    var singleDeveloperRatioDeveloperPart: Double? {
+        didSet {
+            updateSingleDeveloperRatioFromParts()
+        }
+    }
+    var singleDeveloperRatioColorPart: Double? {
+        didSet {
+            updateSingleDeveloperRatioFromParts()
+        }
+    }
 
-    init(store: InventoryStore) {
+    init(store: InventoryStore, initialCategory: InventoryCategory = .hairColor) {
         self.store = store
         let defaultTypeId = ProductType.permanent.rawValue
         let defaultRatio = store.productTypeStore.defaultRatio(for: defaultTypeId)
         let draft = ColorLineDraft(productTypeId: defaultTypeId, defaultDeveloperRatio: defaultRatio)
+        selectedCategory = initialCategory
         lineDraft = draft
         productTypeQuery = store.productTypeStore.displayName(for: draft.productTypeId)
         shadeDraft = ShadeDraft()
         pendingShades = []
         bulkInput = ""
+        singleProductDraft = ProductDraft(productTypeId: ProductType.lightener.rawValue)
         developerRatioDeveloperPart = draft.defaultDeveloperRatio
         developerRatioColorPart = 1
+        singleDeveloperRatioDeveloperPart = nil
+        singleDeveloperRatioColorPart = nil
+        if initialCategory != .hairColor {
+            updateCategory(initialCategory)
+        }
     }
 
     var availableBrands: [String] {
@@ -43,6 +62,10 @@ final class InventoryCreationViewModel {
 
     var brandSuggestions: [String] {
         filteredSuggestions(from: availableBrands, query: lineDraft.brand)
+    }
+
+    var singleBrandSuggestions: [String] {
+        filteredSuggestions(from: availableBrands, query: singleProductDraft.brand)
     }
 
     var lineSuggestions: [String] {
@@ -62,6 +85,13 @@ final class InventoryCreationViewModel {
         let filtered = developers.filter { $0.resolvedBrand.localizedStandardCompare(brand) == .orderedSame }
         let sorted = filtered.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
         return sorted.isEmpty ? developers : sorted
+    }
+
+    func developerLabel(for product: Product) -> String {
+        if let strength = DeveloperStrength(rawValue: product.developerStrength) {
+            return "\(product.displayName) (\(strength.displayName))"
+        }
+        return product.displayName
     }
 
     var defaultDeveloperName: String? {
@@ -105,6 +135,18 @@ final class InventoryCreationViewModel {
         store.productTypeStore.isDeveloperType(lineDraft.productTypeId)
     }
 
+    var isSingleProductValid: Bool {
+        let brand = trimmed(singleProductDraft.brand)
+        let name = trimmed(singleProductDraft.name)
+        guard !brand.isEmpty, !name.isEmpty else { return false }
+        guard let quantity = singleProductDraft.quantityPerUnit, quantity > 0 else { return false }
+        guard let price = singleProductDraft.purchasePrice, price >= 0 else { return false }
+        if selectedCategory == .lightener {
+            guard let ratio = singleProductDraft.defaultDeveloperRatio, ratio > 0 else { return false }
+        }
+        return singleProductDraft.stockQuantity != nil
+    }
+
     var isLineDefaultsComplete: Bool {
         guard let quantity = lineDraft.quantityPerUnit, quantity > 0 else { return false }
         guard let price = lineDraft.purchasePrice, price >= 0 else { return false }
@@ -122,10 +164,10 @@ final class InventoryCreationViewModel {
 
     var lineDefaultsHint: String? {
         if lineDraft.quantityPerUnit == nil {
-            return "Add quantity per unit to calculate cost per unit."
+            return "Add the amount in each unit to calculate cost per unit."
         }
         if let quantity = lineDraft.quantityPerUnit, quantity <= 0 {
-            return "Quantity per unit must be greater than 0."
+            return "Amount per unit must be greater than 0."
         }
         if lineDraft.purchasePrice == nil {
             return "Add a purchase price to calculate cost per unit."
@@ -155,11 +197,18 @@ final class InventoryCreationViewModel {
     }
 
     var canSave: Bool {
-        isLineValid && isLineDefaultsComplete && (!pendingShades.isEmpty || isShadeValid)
+        if selectedCategory == .hairColor {
+            return isLineValid && isLineDefaultsComplete && (!pendingShades.isEmpty || isShadeValid)
+        }
+        return isSingleProductValid
     }
 
     var canAddBulk: Bool {
         isLineValid && isLineDefaultsComplete && !trimmed(bulkInput).isEmpty
+    }
+
+    var bulkPreview: [ShadeDraft] {
+        ShadeBulkParser.parse(bulkInput).map { normalizedShadeDraft(from: $0) }
     }
 
     func selectBrand(_ brand: String) {
@@ -210,6 +259,28 @@ final class InventoryCreationViewModel {
         }
     }
 
+    func updateCategory(_ category: InventoryCategory) {
+        selectedCategory = category
+        switch category {
+        case .hairColor:
+            break
+        case .lightener:
+            singleProductDraft.productTypeId = ProductType.lightener.rawValue
+            singleProductDraft.defaultDeveloperRatio = store.productTypeStore.defaultRatio(for: ProductType.lightener.rawValue)
+            singleProductDraft.developerStrength = nil
+            syncSingleDeveloperRatioParts(from: singleProductDraft.defaultDeveloperRatio)
+        case .developer:
+            singleProductDraft.productTypeId = ProductType.developer.rawValue
+            singleProductDraft.defaultDeveloperRatio = nil
+            syncSingleDeveloperRatioParts(from: nil)
+        case .treatment:
+            singleProductDraft.productTypeId = ProductType.treatment.rawValue
+            singleProductDraft.defaultDeveloperRatio = nil
+            singleProductDraft.developerStrength = nil
+            syncSingleDeveloperRatioParts(from: nil)
+        }
+    }
+
     func updateProductType(_ type: ProductTypeDefinition) {
         lineDraft.productTypeId = type.id
         productTypeQuery = type.name
@@ -232,9 +303,9 @@ final class InventoryCreationViewModel {
     }
 
     func addBulkShades() {
-        let parsed = ShadeBulkParser.parse(bulkInput)
+        let parsed = bulkPreview
         guard !parsed.isEmpty else { return }
-        pendingShades.append(contentsOf: parsed.map { normalizedShadeDraft(from: $0) })
+        pendingShades.append(contentsOf: parsed)
         bulkInput = ""
     }
 
@@ -252,18 +323,31 @@ final class InventoryCreationViewModel {
     }
 
     func saveAll() {
-        guard isLineValid, isLineDefaultsComplete else { return }
-        if isShadeValid {
-            pendingShades.append(normalizedShadeDraft(from: shadeDraft))
-            shadeDraft = ShadeDraft()
-        }
-        guard !pendingShades.isEmpty else { return }
+        if selectedCategory == .hairColor {
+            guard isLineValid, isLineDefaultsComplete else { return }
+            if isShadeValid {
+                pendingShades.append(normalizedShadeDraft(from: shadeDraft))
+                shadeDraft = ShadeDraft()
+            }
+            guard !pendingShades.isEmpty else { return }
 
-        let normalizedDraft = normalizedLineDraft(lineDraft)
-        let line = store.upsertColorLine(from: normalizedDraft, existing: selectedLine)
-        store.addShades(pendingShades, to: line)
-        pendingShades = []
-        selectedLine = line
+            let normalizedDraft = normalizedLineDraft(lineDraft)
+            let line = store.upsertColorLine(from: normalizedDraft, existing: selectedLine)
+            store.addShades(pendingShades, to: line)
+            pendingShades = []
+            selectedLine = line
+        } else {
+            guard isSingleProductValid else { return }
+            let normalized = normalizedSingleProductDraft(singleProductDraft)
+            store.addProduct(from: normalized)
+            singleProductDraft = ProductDraft(productTypeId: singleProductDraft.productTypeId)
+            if selectedCategory == .lightener {
+                singleProductDraft.defaultDeveloperRatio = store.productTypeStore.defaultRatio(for: ProductType.lightener.rawValue)
+                syncSingleDeveloperRatioParts(from: singleProductDraft.defaultDeveloperRatio)
+            } else {
+                syncSingleDeveloperRatioParts(from: nil)
+            }
+        }
     }
 
     private func apply(line: ColorLine) {
@@ -289,6 +373,13 @@ final class InventoryCreationViewModel {
         return normalized
     }
 
+    private func normalizedSingleProductDraft(_ draft: ProductDraft) -> ProductDraft {
+        var normalized = draft
+        normalized.brand = trimmed(draft.brand)
+        normalized.name = trimmed(draft.name)
+        return normalized
+    }
+
     private func syncDeveloperRatioParts(from ratio: Double?) {
         guard !store.productTypeStore.isDeveloperType(lineDraft.productTypeId) else {
             developerRatioDeveloperPart = nil
@@ -297,6 +388,16 @@ final class InventoryCreationViewModel {
         }
         developerRatioDeveloperPart = ratio
         developerRatioColorPart = ratio == nil ? nil : 1
+    }
+
+    private func syncSingleDeveloperRatioParts(from ratio: Double?) {
+        guard selectedCategory == .lightener else {
+            singleDeveloperRatioDeveloperPart = nil
+            singleDeveloperRatioColorPart = nil
+            return
+        }
+        singleDeveloperRatioDeveloperPart = ratio
+        singleDeveloperRatioColorPart = ratio == nil ? nil : 1
     }
 
     private func updateDeveloperRatioFromParts() {
@@ -311,6 +412,20 @@ final class InventoryCreationViewModel {
             return
         }
         lineDraft.defaultDeveloperRatio = developerPart / colorPart
+    }
+
+    private func updateSingleDeveloperRatioFromParts() {
+        guard selectedCategory == .lightener else {
+            singleProductDraft.defaultDeveloperRatio = nil
+            return
+        }
+        guard let developerPart = singleDeveloperRatioDeveloperPart,
+              let colorPart = singleDeveloperRatioColorPart,
+              colorPart > 0 else {
+            singleProductDraft.defaultDeveloperRatio = nil
+            return
+        }
+        singleProductDraft.defaultDeveloperRatio = developerPart / colorPart
     }
 
     private func normalizedShadeDraft(from draft: ShadeDraft) -> ShadeDraft {

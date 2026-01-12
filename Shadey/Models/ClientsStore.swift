@@ -68,39 +68,81 @@ final class ClientsStore {
         service.client = client
         service.beforePhoto = draft.beforePhotoData
         service.afterPhoto = draft.afterPhotoData
-        service.developerRatio = draft.developerRatio
-        service.developer = draft.developer
-
-        let developerAmount = ServiceCalculator.developerAmount(for: draft.selections, ratio: draft.developerRatio)
-        service.developerAmountUsed = developerAmount
+        service.developerRatio = 0
+        service.developerAmountUsed = 0
+        service.totalCost = 0
 
         var items: Set<FormulaItem> = []
-        for selection in draft.selections {
-            let item = FormulaItem(context: context)
-            item.id = UUID()
-            item.amountUsed = selection.amountValue
-            item.ratioPart = selection.ratioPart
-            item.product = selection.product
-            item.cost = selection.cost
-            item.service = service
-            items.insert(item)
+        var formulas: Set<ServiceFormula> = []
+        var totalCost: Double = 0
+
+        for (index, formulaDraft) in draft.formulas.enumerated() {
+            let formula = ServiceFormula(context: context)
+            formula.id = UUID()
+            formula.name = formulaDraft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? "Formula \(index + 1)"
+                : formulaDraft.name
+            formula.sortOrder = Int16(index)
+            formula.developerRatio = formulaDraft.developerRatio
+            formula.developer = formulaDraft.developer
+
+            let developerAmount = ServiceCalculator.developerAmount(
+                for: formulaDraft.selections,
+                ratio: formulaDraft.developerRatio
+            )
+            formula.developerAmountUsed = developerAmount
+
+            var formulaItems: Set<FormulaItem> = []
+            for selection in formulaDraft.selections {
+                let item = FormulaItem(context: context)
+                item.id = UUID()
+                item.amountUsed = selection.amountValue
+                item.ratioPart = selection.ratioPart
+                item.product = selection.product
+                item.cost = selection.cost
+                item.service = service
+                item.serviceFormula = formula
+                formulaItems.insert(item)
+                items.insert(item)
+            }
+
+            formula.formulaItems = formulaItems
+            formula.totalCost = ServiceCalculator.totalCost(
+                selections: formulaDraft.selections,
+                developer: formulaDraft.developer,
+                developerAmount: developerAmount
+            )
+            formula.service = service
+            formulas.insert(formula)
+            totalCost += formula.totalCost
+
+            if index == 0 {
+                service.developerRatio = formula.developerRatio
+                service.developer = formula.developer
+                service.developerAmountUsed = formula.developerAmountUsed
+            }
         }
+
         service.formulaItems = items
-        service.totalCost = ServiceCalculator.totalCost(
-            selections: draft.selections,
-            developer: draft.developer,
-            developerAmount: developerAmount
-        )
+        service.formulaGroups = formulas
+        service.totalCost = totalCost
 
         saveContext()
         reload()
 
-        for selection in draft.selections {
-            inventoryStore.adjustStock(for: selection.product, by: -selection.amountValue)
-        }
+        for formula in draft.formulas {
+            for selection in formula.selections {
+                let deduction = FormulaDeductionCalculator.deductionAmount(for: selection)
+                inventoryStore.adjustStock(for: selection.product, by: -deduction)
+            }
 
-        if let developer = draft.developer, developerAmount > 0 {
-            inventoryStore.adjustStock(for: developer, by: -developerAmount)
+            let developerAmount = ServiceCalculator.developerAmount(
+                for: formula.selections,
+                ratio: formula.developerRatio
+            )
+            if let developer = formula.developer, developerAmount > 0 {
+                inventoryStore.adjustStock(for: developer, by: -developerAmount)
+            }
         }
     }
 

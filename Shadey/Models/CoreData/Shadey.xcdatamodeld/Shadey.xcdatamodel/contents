@@ -14,6 +14,7 @@
         <attribute name="ratioPart" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="product" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Product" inverseName="formulaItems" inverseEntity="Product" maxCount="1"/>
         <relationship name="service" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Service" inverseName="formulaItems" inverseEntity="Service" maxCount="1"/>
+        <relationship name="serviceFormula" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="ServiceFormula" inverseName="formulaItems" inverseEntity="ServiceFormula" maxCount="1"/>
     </entity>
     <entity name="ColorLine" representedClassName="ColorLine" syncable="YES" codeGenerationType="none">
         <attribute name="brand" optional="NO" attributeType="String"/>
@@ -31,6 +32,7 @@
     </entity>
     <entity name="Product" representedClassName="Product" syncable="YES" codeGenerationType="none">
         <attribute name="barcode" optional="YES" attributeType="String"/>
+        <attribute name="autoAddDisabled" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="brand" optional="NO" attributeType="String"/>
         <attribute name="createdAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="defaultDeveloperRatio" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
@@ -55,6 +57,7 @@
         <attribute name="updatedAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="colorLine" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="ColorLine" inverseName="shades" inverseEntity="ColorLine" maxCount="1"/>
         <relationship name="defaultDeveloperLines" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ColorLine" inverseName="defaultDeveloper" inverseEntity="ColorLine"/>
+        <relationship name="developerFormulas" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ServiceFormula" inverseName="developer" inverseEntity="ServiceFormula"/>
         <relationship name="developerServices" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Service" inverseName="developer" inverseEntity="Service"/>
         <relationship name="formulaItems" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FormulaItem" inverseName="product" inverseEntity="FormulaItem"/>
         <relationship name="shoppingListItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ShoppingListItem" inverseName="product" inverseEntity="ShoppingListItem"/>
@@ -70,13 +73,28 @@
         <attribute name="totalCost" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="client" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Client" inverseName="services" inverseEntity="Client" maxCount="1"/>
         <relationship name="developer" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Product" inverseName="developerServices" inverseEntity="Product" maxCount="1"/>
+        <relationship name="formulaGroups" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ServiceFormula" inverseName="service" inverseEntity="Service"/>
         <relationship name="formulaItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FormulaItem" inverseName="service" inverseEntity="FormulaItem"/>
+    </entity>
+    <entity name="ServiceFormula" representedClassName="ServiceFormula" syncable="YES" codeGenerationType="none">
+        <attribute name="developerAmountUsed" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="developerRatio" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="sortOrder" optional="NO" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="totalCost" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="developer" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Product" inverseName="developerFormulas" inverseEntity="Product" maxCount="1"/>
+        <relationship name="formulaItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FormulaItem" inverseName="serviceFormula" inverseEntity="ServiceFormula"/>
+        <relationship name="service" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Service" inverseName="formulaGroups" inverseEntity="Service" maxCount="1"/>
     </entity>
     <entity name="ShoppingListItem" representedClassName="ShoppingListItem" syncable="YES" codeGenerationType="none">
         <attribute name="createdAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="isChecked" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isPinned" optional="NO" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="note" optional="YES" attributeType="String"/>
         <attribute name="quantityNeeded" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="reasonRaw" optional="YES" attributeType="String"/>
         <relationship name="product" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Product" inverseName="shoppingListItems" inverseEntity="Product" maxCount="1"/>
     </entity>
 </model>

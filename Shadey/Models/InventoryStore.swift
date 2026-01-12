@@ -98,12 +98,14 @@ final class InventoryStore {
         let product = Product(context: context)
         apply(draft: draft, to: product, isNew: true)
         saveContext()
+        shoppingListStore.updateAutoList(for: product)
         reload()
     }
 
     func update(product: Product, with draft: ProductDraft) {
         apply(draft: draft, to: product, isNew: false)
         saveContext()
+        shoppingListStore.updateAutoList(for: product)
         reload()
     }
 
@@ -181,9 +183,7 @@ final class InventoryStore {
     func adjustStock(for product: Product, by delta: Double) {
         product.stockQuantity = max(product.stockQuantity + delta, 0)
         product.updatedAt = .now
-        if product.stockQuantity == 0 {
-            shoppingListStore.addItemIfNeeded(for: product)
-        }
+        shoppingListStore.updateAutoList(for: product)
         saveContext()
         reload()
     }
@@ -237,6 +237,7 @@ final class InventoryStore {
         product.lowStockThreshold = draft.lowStockThreshold ?? 0
         product.overstockThreshold = draft.overstockThreshold ?? 0
         product.barcode = draft.barcode.isEmpty ? nil : draft.barcode
+        product.autoAddDisabled = draft.autoAddDisabled
         product.developerStrength = draft.developerStrength?.rawValue ?? 0
         product.recommendedDeveloperStrength = draft.recommendedDeveloperStrength?.rawValue ?? 0
         if let line = product.colorLine {
