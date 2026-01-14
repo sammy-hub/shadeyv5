@@ -9,14 +9,12 @@ struct SurfaceCardView<Content: View>: View {
 
     var body: some View {
         content
-            .padding(DesignSystem.Spacing.cardPadding)
-            .background(DesignSystem.surface)
-            .clipShape(.rect(cornerRadius: DesignSystem.CornerRadius.large))
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.large)
-                    .stroke(DesignSystem.stroke, lineWidth: 1)
-            )
-            .shadow(color: DesignSystem.stroke.opacity(0.4), radius: 10, x: 0, y: 6)
+            .padding(DesignSystem.Spacing.large)
+            .background {
+                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.medium)
+                    .fill(DesignSystem.surface)
+                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+            }
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

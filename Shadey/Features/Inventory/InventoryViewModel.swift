@@ -127,6 +127,27 @@ final class InventoryViewModel {
         store.product(id: id)
     }
 
+    func productSubtitle(for product: Product) -> String {
+        let lineName = product.colorLine?.name.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let brandLine: String
+        if lineName.isEmpty {
+            brandLine = product.resolvedBrand
+        } else {
+            brandLine = "\(product.resolvedBrand) • \(lineName)"
+        }
+        let typeName = store.productTypeStore.displayName(for: product.resolvedProductTypeId)
+        return "\(brandLine) • \(typeName)"
+    }
+
+    func stockText(for product: Product) -> String {
+        "\(product.stockQuantity.formatted(AppFormatters.decimal)) \(product.resolvedUnit.displayName)"
+    }
+
+    func unitCostText(for product: Product) -> String? {
+        guard product.costPerUnit > 0 else { return nil }
+        return product.costPerUnit.formatted(AppFormatters.currency)
+    }
+
     func stockStatus(for product: Product) -> StockStatus {
         stockAlertSettingsStore.stockStatus(for: product)
     }

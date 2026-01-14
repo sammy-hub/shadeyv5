@@ -67,7 +67,10 @@ extension AppleSignInButton {
     static func sha256(_ input: String) -> String {
         let inputData = Data(input.utf8)
         let hashed = SHA256.hash(data: inputData)
-        return hashed.compactMap { String(format: "%02x", $0) }.joined()
+        return hashed.map { byte in
+            let hex = String(byte, radix: 16)
+            return String(repeating: "0", count: max(0, 2 - hex.count)) + hex
+        }
+        .joined()
     }
 }
-

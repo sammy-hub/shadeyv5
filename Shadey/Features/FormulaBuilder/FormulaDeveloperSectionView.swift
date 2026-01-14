@@ -10,57 +10,59 @@ struct FormulaDeveloperSectionView: View {
             set: { viewModel.updateDeveloperSelection($0, formulaId: formula.id) }
         )
 
-        let ratioBinding = Binding<Double?>(
-            get: { viewModel.activeDeveloperRatio(for: formula) },
-            set: { viewModel.updateDeveloperRatio($0 ?? 0, formulaId: formula.id) }
+        let usesSuggestedRatio = Binding<Bool>(
+            get: { !formula.isDeveloperRatioOverridden },
+            set: { viewModel.setDeveloperRatioOverride(!$0, formulaId: formula.id) }
         )
 
-        let ratioLabel = viewModel.isLightenerType(formula) ? "Mix ratio" : "Default ratio"
+        let ratioBinding = Binding<Double>(
+            get: { viewModel.activeDeveloperRatio(for: formula) },
+            set: { viewModel.updateDeveloperRatio($0, formulaId: formula.id) }
+        )
 
-        return VStack(alignment: .leading, spacing: DesignSystem.Spacing.medium) {
-            SectionHeaderView(title: "Developer", subtitle: nil)
-
+        SwiftUI.Section {
             if formula.selections.isEmpty {
-                Text("Add products to this formula to reveal developer recommendations.")
+                Text("Add products to see developer recommendations.")
                     .font(DesignSystem.Typography.subheadline)
                     .foregroundStyle(DesignSystem.textSecondary)
             } else {
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
-                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.xSmall) {
-                        Text("Developer")
-                            .font(DesignSystem.Typography.caption)
-                            .foregroundStyle(DesignSystem.textSecondary)
-                        Picker("Developer", selection: developerBinding) {
-                            Text("Select Developer")
-                                .tag(nil as UUID?)
-                            ForEach(viewModel.availableDeveloperProducts, id: \.id) { developer in
-                                Text(viewModel.developerLabel(for: developer) ?? developer.displayName)
-                                    .tag(Optional(developer.id))
-                            }
-                        }
-                        .pickerStyle(.menu)
-                    }
-
-                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.xSmall) {
-                        Text(ratioLabel)
-                            .font(DesignSystem.Typography.caption)
-                            .foregroundStyle(DesignSystem.textSecondary)
-                        Text("Enter how many parts of developer for every 1 part of the formula color.")
-                            .font(DesignSystem.Typography.caption)
-                            .foregroundStyle(DesignSystem.textSecondary)
-                        HStack(spacing: DesignSystem.Spacing.small) {
-                            TextField("Ratio", value: ratioBinding, format: .number)
-                                .keyboardType(.decimalPad)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(minWidth: 70)
-                            Text(": 1")
-                                .font(DesignSystem.Typography.caption)
-                                .foregroundStyle(DesignSystem.textSecondary)
-                        }
+                Picker("Developer", selection: developerBinding) {
+                    Text("Suggested").tag(nil as UUID?)
+                    ForEach(viewModel.availableDeveloperProducts, id: \.id) { developer in
+                        Text(viewModel.developerLabel(for: developer) ?? developer.displayName)
+                            .tag(Optional(developer.id))
                     }
                 }
-            }
+                .pickerStyle(.menu)
 
+                Toggle("Use recommended ratio", isOn: usesSuggestedRatio)
+
+                if !usesSuggestedRatio.wrappedValue {
+                    HStack(alignment: .firstTextBaseline, spacing: DesignSystem.Spacing.small) {
+                        Text("Ratio")
+                            .font(DesignSystem.Typography.subheadline)
+                            .foregroundStyle(DesignSystem.textSecondary)
+                        Spacer()
+                        TextField("Ratio", value: ratioBinding, format: .number)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 90)
+                        Text(": 1")
+                            .font(DesignSystem.Typography.subheadline)
+                            .foregroundStyle(DesignSystem.textSecondary)
+                    }
+                }
+
+                if let strength = viewModel.recommendedDeveloperStrength(for: formula) {
+                    Text("Suggested strength: \(strength.displayName)")
+                        .font(DesignSystem.Typography.caption)
+                        .foregroundStyle(DesignSystem.textSecondary)
+                }
+            }
+        } header: {
+            Text("Developer")
+        } footer: {
+            Text("Adjust developer selection and ratio when needed.")
         }
     }
 }

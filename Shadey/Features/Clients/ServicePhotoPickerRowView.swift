@@ -7,11 +7,15 @@ struct ServicePhotoPickerRowView: View {
     @Binding var selection: PhotosPickerItem?
 
     var body: some View {
-        VStack(alignment: .leading) {
-            PhotosPicker(selection: $selection, matching: .images) {
-                Text("Select \(label) Photo")
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
+            LabeledContent("\(label) Photo") {
+                PhotosPicker(selection: $selection, matching: .images) {
+                    Text(previewData == nil ? "Add" : "Change")
+                }
+                .accessibilityLabel("Select \(label) Photo")
             }
-            PhotoPreviewView(label: label, imageData: previewData)
+
+            PhotoPreviewView(label: label, imageData: previewData, showsLabel: false)
         }
     }
 }

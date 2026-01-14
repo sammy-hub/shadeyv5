@@ -12,3 +12,11 @@ struct ShadeyApp: App {
         }
     }
 }
+
+
+#Preview {
+    AppEntryView(appData: AppData())
+        .environment(AppData())
+        .environment(\.managedObjectContext, AppData().persistence.viewContext)
+}
+

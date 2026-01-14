@@ -44,12 +44,15 @@ struct ClientDetailView: View {
                 Button("Add Service", systemImage: "plus") {
                     showingAddService = true
                 }
+                .accessibilityIdentifier("clientAddServiceButton")
                 Button("Edit", systemImage: "square.and.pencil") {
                     showingEditClient = true
                 }
+                .accessibilityIdentifier("clientEditButton")
                 Button("Delete", systemImage: "trash", role: .destructive) {
                     showingDeleteClient = true
                 }
+                .accessibilityIdentifier("clientDeleteButton")
             }
         }
         .confirmationDialog("Delete Client", isPresented: $showingDeleteClient) {

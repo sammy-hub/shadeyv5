@@ -7,16 +7,16 @@ struct ClientServiceRowView: View {
         SurfaceCardView {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(service.date, style: .date)
-                        .font(.headline)
+                    Text(service.date.formatted(AppFormatters.dateAbbreviated))
+                        .font(DesignSystem.Typography.headline)
                         .foregroundStyle(DesignSystem.textPrimary)
                     Text("\(service.formulaItems?.count ?? 0) products")
-                        .font(.subheadline)
+                        .font(DesignSystem.Typography.subheadline)
                         .foregroundStyle(DesignSystem.textSecondary)
                 }
                 Spacer()
-                Text(service.totalCost, format: CurrencyFormat.inventory)
-                    .font(.headline)
+                Text(service.totalCost.formatted(AppFormatters.currency))
+                    .font(DesignSystem.Typography.headline)
                     .foregroundStyle(DesignSystem.textPrimary)
             }
         }

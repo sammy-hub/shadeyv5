@@ -18,9 +18,11 @@ struct ClientEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Client") {
+                Section {
                     TextField("Name", text: $name)
                     TextField("Notes", text: $notes, axis: .vertical)
+                } header: {
+                    Text("Client")
                 }
             }
             .navigationTitle(client == nil ? "Add Client" : "Edit Client")

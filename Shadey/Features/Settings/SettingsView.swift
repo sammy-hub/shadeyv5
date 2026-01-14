@@ -52,14 +52,32 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.menu)
 
-                Picker("Accent Color", selection: $appearanceSettings.accentSelection) {
-                    ForEach(AppearanceSettings.AccentSelection.allCases) { selection in
-                        Label(selection.displayName, systemImage: "circle.fill")
-                            .foregroundStyle(selection.color)
-                            .tag(selection)
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
+                    Text("Accent Color")
+                        .font(DesignSystem.Typography.subheadline)
+                        .foregroundStyle(DesignSystem.textPrimary)
+                    
+                    HStack(spacing: DesignSystem.Spacing.medium) {
+                        ForEach(AppearanceSettings.AccentSelection.allCases) { selection in
+                            Button {
+                                appearanceSettings.accentSelection = selection
+                            } label: {
+                                Circle()
+                                    .fill(selection.color)
+                                    .frame(width: 44, height: 44)
+                                    .overlay {
+                                        if appearanceSettings.accentSelection == selection {
+                                            Circle()
+                                                .strokeBorder(DesignSystem.textPrimary, lineWidth: 3)
+                                        }
+                                    }
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(selection.displayName)
+                            .accessibilityIdentifier("accentColor_\\(selection.rawValue)")
+                        }
                     }
                 }
-                .pickerStyle(.menu)
             }
 
             Section("Inventory") {

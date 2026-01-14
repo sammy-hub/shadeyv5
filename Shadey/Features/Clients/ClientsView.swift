@@ -12,46 +12,38 @@ struct ClientsView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DesignSystem.Spacing.sectionSpacing) {
-                ClientsSummaryCardView(totalClients: viewModel.clients.count)
-                if viewModel.clients.isEmpty {
-                    if viewModel.searchText.isEmpty {
-                        ContentUnavailableView {
-                            Label("No Clients Yet", systemImage: "person.crop.circle")
-                        } description: {
-                            Text("Add clients to track services, formulas, and photos.")
-                        } actions: {
-                            Button("Add Client", systemImage: "plus") {
-                                showingAddClient = true
-                            }
-                            .buttonStyle(.borderedProminent)
+        List {
+            if viewModel.clients.isEmpty {
+                if viewModel.searchText.isEmpty {
+                    ContentUnavailableView {
+                        Label("No Clients Yet", systemImage: "person.crop.circle")
+                    } description: {
+                        Text("Add clients to track services, formulas, and photos.")
+                    } actions: {
+                        Button("Add Client", systemImage: "plus") {
+                            showingAddClient = true
                         }
-                        .padding(.vertical, DesignSystem.Spacing.xxLarge)
-                    } else {
-                        ContentUnavailableView {
-                            Label("No Matches", systemImage: "magnifyingglass")
-                        } description: {
-                            Text("Try a different name or clear the search.")
-                        }
-                        .padding(.vertical, DesignSystem.Spacing.xxLarge)
+                        .buttonStyle(.borderedProminent)
                     }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 } else {
-                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.small) {
-                        ForEach(viewModel.clients, id: \.id) { client in
-                            NavigationLink(value: ClientRoute.detail(client.id)) {
-                                ClientRowView(client: client)
-                            }
-                        }
+                    ContentUnavailableView {
+                        Label("No Matches", systemImage: "magnifyingglass")
+                    } description: {
+                        Text("Try a different name or clear the search.")
                     }
-                    .animation(.easeInOut, value: viewModel.clients.map(\.id))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                }
+            } else {
+                ForEach(viewModel.clients, id: \.id) { client in
+                    NavigationLink(value: ClientRoute.detail(client.id)) {
+                        ClientRowView(client: client)
+                    }
                 }
             }
-            .padding(.horizontal, DesignSystem.Spacing.pagePadding)
-            .padding(.vertical, DesignSystem.Spacing.large)
         }
-        .background(DesignSystem.background)
-        .scrollIndicators(.hidden)
         .navigationTitle("Clients")
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
@@ -70,10 +62,12 @@ struct ClientsView: View {
                 } label: {
                     Label("Sort", systemImage: "arrow.up.arrow.down")
                 }
+                .accessibilityIdentifier("clientsSortMenu")
 
                 Button("Add", systemImage: "plus") {
                     showingAddClient = true
                 }
+                .accessibilityIdentifier("clientsAddButton")
             }
         }
         .searchable(text: $viewModel.searchText, prompt: "Search clients")

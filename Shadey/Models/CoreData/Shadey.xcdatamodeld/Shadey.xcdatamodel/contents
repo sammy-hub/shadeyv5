@@ -13,8 +13,8 @@
         <attribute name="id" optional="NO" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="ratioPart" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="product" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Product" inverseName="formulaItems" inverseEntity="Product" maxCount="1"/>
-        <relationship name="service" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Service" inverseName="formulaItems" inverseEntity="Service" maxCount="1"/>
-        <relationship name="serviceFormula" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="ServiceFormula" inverseName="formulaItems" inverseEntity="ServiceFormula" maxCount="1"/>
+        <relationship name="service" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Service" inverseName="formulaItems" inverseEntity="Service" maxCount="1" syncable="YES"/>
+        <relationship name="serviceFormula" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="ServiceFormula" inverseName="formulaItems" inverseEntity="ServiceFormula" maxCount="1" syncable="YES"/>
     </entity>
     <entity name="ColorLine" representedClassName="ColorLine" syncable="YES" codeGenerationType="none">
         <attribute name="brand" optional="NO" attributeType="String"/>
@@ -73,8 +73,8 @@
         <attribute name="totalCost" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="client" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Client" inverseName="services" inverseEntity="Client" maxCount="1"/>
         <relationship name="developer" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Product" inverseName="developerServices" inverseEntity="Product" maxCount="1"/>
-        <relationship name="formulaGroups" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ServiceFormula" inverseName="service" inverseEntity="Service"/>
-        <relationship name="formulaItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FormulaItem" inverseName="service" inverseEntity="FormulaItem"/>
+        <relationship name="formulaGroups" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ServiceFormula" inverseName="service" inverseEntity="Service" syncable="YES"/>
+        <relationship name="formulaItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FormulaItem" inverseName="service" inverseEntity="FormulaItem" syncable="YES"/>
     </entity>
     <entity name="ServiceFormula" representedClassName="ServiceFormula" syncable="YES" codeGenerationType="none">
         <attribute name="developerAmountUsed" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
@@ -84,8 +84,8 @@
         <attribute name="sortOrder" optional="NO" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="totalCost" optional="NO" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <relationship name="developer" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Product" inverseName="developerFormulas" inverseEntity="Product" maxCount="1"/>
-        <relationship name="formulaItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FormulaItem" inverseName="serviceFormula" inverseEntity="ServiceFormula"/>
-        <relationship name="service" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Service" inverseName="formulaGroups" inverseEntity="Service" maxCount="1"/>
+        <relationship name="formulaItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FormulaItem" inverseName="serviceFormula" inverseEntity="ServiceFormula" syncable="YES"/>
+        <relationship name="service" optional="YES" toMany="NO" deletionRule="Nullify" destinationEntity="Service" inverseName="formulaGroups" inverseEntity="Service" maxCount="1" syncable="YES"/>
     </entity>
     <entity name="ShoppingListItem" representedClassName="ShoppingListItem" syncable="YES" codeGenerationType="none">
         <attribute name="createdAt" optional="NO" attributeType="Date" usesScalarValueType="NO"/>

@@ -16,6 +16,18 @@ final class DashboardViewModel {
         inventoryStore.totalInventoryValue()
     }
 
+    var hasInventory: Bool {
+        !inventoryStore.products.isEmpty
+    }
+
+    var hasClients: Bool {
+        !clientsStore.clients.isEmpty
+    }
+
+    var shouldShowEmptyState: Bool {
+        !hasInventory && !hasClients
+    }
+
     var totalClients: Int {
         clientsStore.clients.count
     }
@@ -39,7 +51,7 @@ final class DashboardViewModel {
             let total = products.reduce(0) { $0 + $1.stockQuantity }
             let definition = inventoryStore.productTypeStore.definition(for: typeId)
             return (definition, total)
-        }.sorted { $0.0.name < $1.0.name }
+        }.sorted { $0.0.name.localizedStandardCompare($1.0.name) == .orderedAscending }
     }
 
     var valueByBrand: [(String, Double)] {
@@ -47,7 +59,7 @@ final class DashboardViewModel {
         return grouped.map { brand, products in
             let value = products.reduce(0) { $0 + ($1.stockQuantity * $1.costPerUnit) }
             return (brand, value)
-        }.sorted { $0.0 < $1.0 }
+        }.sorted { $0.0.localizedStandardCompare($1.0) == .orderedAscending }
     }
 
     var usageTrends: [(String, Int)] {
@@ -55,10 +67,8 @@ final class DashboardViewModel {
         let grouped = Dictionary(grouping: recentServices) { service in
             calendar.date(from: calendar.dateComponents([.year, .month], from: service.date)) ?? service.date
         }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM"
         return grouped.keys.sorted().map { date in
-            let label = formatter.string(from: date)
+            let label = date.formatted(AppFormatters.monthOnly)
             let count = grouped[date]?.count ?? 0
             return (label, count)
         }

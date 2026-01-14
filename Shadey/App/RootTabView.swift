@@ -63,3 +63,8 @@ struct RootTabView: View {
         .preferredColorScheme(appData.appearanceSettings.preferredColorScheme)
     }
 }
+
+#Preview {
+    RootTabView(appData: AppData())
+}
+

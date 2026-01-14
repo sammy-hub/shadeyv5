@@ -13,6 +13,6 @@ struct ServiceDetailView: View {
             .padding()
         }
         .background(DesignSystem.background)
-        .navigationTitle(service.date.formatted(date: .abbreviated, time: .omitted))
+        .navigationTitle(service.date.formatted(AppFormatters.dateAbbreviated))
     }
 }

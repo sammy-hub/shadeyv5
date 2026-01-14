@@ -146,6 +146,14 @@ final class ServiceEditorViewModel {
         draft.formulas.firstIndex { $0.id == formulaId }
     }
 
+    func formula(for formulaId: UUID) -> ServiceFormulaDraft? {
+        draft.formulas.first { $0.id == formulaId }
+    }
+
+    func totalMixAmount(for formula: ServiceFormulaDraft) -> Double {
+        displayColorAmount(for: formula) + displayDeveloperAmount(for: formula)
+    }
+
     func updateFormulaName(_ name: String, for formulaId: UUID) {
         guard let index = formulaIndex(for: formulaId) else { return }
         draft.formulas[index].name = name

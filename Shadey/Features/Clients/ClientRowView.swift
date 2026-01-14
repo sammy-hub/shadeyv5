@@ -4,28 +4,46 @@ struct ClientRowView: View {
     let client: Client
 
     var body: some View {
-        SurfaceCardView {
-            HStack(alignment: .top, spacing: DesignSystem.Spacing.small) {
-                ClientAvatarView(initials: client.initials)
-                VStack(alignment: .leading, spacing: DesignSystem.Spacing.xSmall) {
-                    Text(client.name)
-                        .font(DesignSystem.Typography.headline)
-                        .foregroundStyle(DesignSystem.textPrimary)
-                    if let lastDate = client.sortedServices.first?.date {
-                        Text(lastDate, style: .date)
-                            .font(DesignSystem.Typography.subheadline)
-                            .foregroundStyle(DesignSystem.textSecondary)
-                    } else {
-                        Text("No visits yet")
-                            .font(DesignSystem.Typography.subheadline)
-                            .foregroundStyle(DesignSystem.textSecondary)
-                    }
+        HStack(alignment: .center, spacing: 12) {
+            ClientAvatarView(initials: client.initials)
+                .frame(width: 28, height: 28)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(client.name)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                
+                if !subtitleText.isEmpty {
+                    Text(subtitleText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
-                Spacer()
-                Text("\(client.sortedServices.count) visits")
-                    .font(DesignSystem.Typography.subheadline)
-                    .foregroundStyle(DesignSystem.textSecondary)
+            }
+            
+            Spacer(minLength: 8)
+            
+            if !client.sortedServices.isEmpty {
+                Text("\(client.sortedServices.count)")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
             }
         }
+        .padding(.vertical, 4)
+    }
+    
+    private var subtitleText: String {
+        var parts: [String] = []
+        
+        if let lastDate = client.sortedServices.first?.date {
+            parts.append(lastDate.formatted(AppFormatters.dateAbbreviated))
+        } else {
+            parts.append("No visits yet")
+        }
+        
+        if !client.sortedServices.isEmpty {
+            parts.append("\(client.sortedServices.count) services")
+        }
+        
+        return parts.joined(separator: " • ")
     }
 }

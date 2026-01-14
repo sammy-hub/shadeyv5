@@ -2,26 +2,24 @@ import SwiftUI
 
 struct FormulaQuickSearchSectionView: View {
     @Bindable var viewModel: ServiceEditorViewModel
-    let formula: ServiceFormulaDraft
+    let formulaId: UUID
 
     var body: some View {
         let searchBinding = Binding<String>(
-            get: { viewModel.searchText(for: formula.id) },
-            set: { viewModel.updateSearchText($0, for: formula.id) }
+            get: { viewModel.searchText(for: formulaId) },
+            set: { viewModel.updateSearchText($0, for: formulaId) }
         )
 
-        VStack(alignment: .leading, spacing: DesignSystem.Spacing.medium) {
-            SectionHeaderView(title: "Add Products", subtitle: "Search shades, favorites, and recents.")
-
+        SwiftUI.Section {
             TextField("Search shades or brands", text: searchBinding)
-                .textFieldStyle(.roundedBorder)
+                .accessibilityIdentifier("formulaSearchField")
 
-            if viewModel.searchText(for: formula.id).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if viewModel.searchText(for: formulaId).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 if !viewModel.favoriteProducts.isEmpty {
                     FormulaChipRowView(
                         title: "Favorites",
                         products: viewModel.favoriteProducts,
-                        onSelect: { viewModel.addSelection(for: $0, formulaId: formula.id) }
+                        onSelect: { viewModel.addSelection(for: $0, formulaId: formulaId) }
                     )
                 }
 
@@ -29,35 +27,40 @@ struct FormulaQuickSearchSectionView: View {
                     FormulaChipRowView(
                         title: "Recents",
                         products: viewModel.recentProducts,
-                        onSelect: { viewModel.addSelection(for: $0, formulaId: formula.id) }
+                        onSelect: { viewModel.addSelection(for: $0, formulaId: formulaId) }
                     )
                 }
+
+                if viewModel.favoriteProducts.isEmpty && viewModel.recentProducts.isEmpty {
+                    Text("Search to add products to this formula.")
+                        .font(DesignSystem.Typography.caption)
+                        .foregroundStyle(DesignSystem.textSecondary)
+                }
             } else {
-                let results = viewModel.filteredColorProducts(for: formula.id)
+                let results = viewModel.filteredColorProducts(for: formulaId)
                 if results.isEmpty {
                     Text("No matches yet.")
                         .font(DesignSystem.Typography.caption)
                         .foregroundStyle(DesignSystem.textSecondary)
                 } else {
-                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.xSmall) {
-                        ForEach(results, id: \.id) { product in
-                            FormulaProductResultRowView(
-                                product: product,
-                                typeName: viewModel.typeName(for: product),
-                                showsStock: viewModel.showsStockInSelection,
-                                isFavorite: viewModel.isFavorite(product)
-                            ) {
-                                viewModel.addSelection(for: product, formulaId: formula.id)
-                            } onToggleFavorite: {
-                                viewModel.toggleFavorite(for: product)
-                            }
-                            if product.id != results.last?.id {
-                                Divider()
-                            }
+                    ForEach(results, id: \.id) { product in
+                        FormulaProductResultRowView(
+                            product: product,
+                            typeName: viewModel.typeName(for: product),
+                            showsStock: viewModel.showsStockInSelection,
+                            isFavorite: viewModel.isFavorite(product)
+                        ) {
+                            viewModel.addSelection(for: product, formulaId: formulaId)
+                        } onToggleFavorite: {
+                            viewModel.toggleFavorite(for: product)
                         }
                     }
                 }
             }
+        } header: {
+            Text("Add Products")
+        } footer: {
+            Text("Search your inventory by shade, brand, or line.")
         }
     }
 }
@@ -72,6 +75,7 @@ struct FormulaChipRowView: View {
             Text(title)
                 .font(DesignSystem.Typography.subheadline)
                 .foregroundStyle(DesignSystem.textSecondary)
+
             ScrollView(.horizontal) {
                 HStack(spacing: DesignSystem.Spacing.small) {
                     ForEach(products, id: \.id) { product in
@@ -79,6 +83,7 @@ struct FormulaChipRowView: View {
                             onSelect(product)
                         }
                         .buttonStyle(.bordered)
+                        .accessibilityLabel("Add \(product.shadeLabel)")
                     }
                 }
                 .padding(.vertical, DesignSystem.Spacing.xSmall)

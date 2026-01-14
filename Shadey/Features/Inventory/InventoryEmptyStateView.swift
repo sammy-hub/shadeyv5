@@ -6,30 +6,24 @@ struct InventoryEmptyStateView: View {
     let onAdd: () -> Void
 
     var body: some View {
-        ContentUnavailableView {
-            Label(title, systemImage: "plus.circle")
+        let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let isFiltered = hasFilters || !trimmedSearch.isEmpty
+        let title = isFiltered ? "No Matching Products" : "No Inventory Yet"
+        let message = isFiltered
+            ? "Try clearing filters or searching with a different term."
+            : "Add your first product to start tracking stock and costs."
+
+        return ContentUnavailableView {
+            Label(title, systemImage: "tray")
         } description: {
             Text(message)
         } actions: {
             Button("Add Product", systemImage: "plus") {
                 onAdd()
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.borderedProminent)
+            .accessibilityIdentifier("addProductEmptyStateButton")
         }
         .padding(.vertical, DesignSystem.Spacing.xxLarge)
-    }
-
-    private var title: String {
-        if hasFilters || !searchText.isEmpty {
-            return "No Matching Products"
-        }
-        return "No Inventory Yet"
-    }
-
-    private var message: String {
-        if hasFilters || !searchText.isEmpty {
-            return "Try clearing filters or searching with a different term."
-        }
-        return "Add your first product to start tracking stock and costs."
     }
 }

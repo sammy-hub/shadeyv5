@@ -38,8 +38,7 @@ struct ProductDetailView: View {
                             title: "Units in stock",
                             value: product.stockQuantity.formatted(.number)
                         )
-                        KeyValueRowView(title: "Cost per unit", value: product.costPerUnit.formatted(CurrencyFormat.inventory))
-                        KeyValueRowView(title: "Purchase price", value: product.resolvedPurchasePrice.formatted(CurrencyFormat.inventory))
+                        KeyValueRowView(title: "Cost per unit", value: product.resolvedPurchasePrice.formatted(CurrencyFormat.inventory))
                         KeyValueRowView(title: "Amount per unit", value: "\(product.resolvedQuantityPerUnit.formatted(.number)) \(product.resolvedUnit.displayName)")
                         let lowStockValue = thresholdDetails.value > 0
                             ? "\(thresholdDetails.value.formatted(.number)) \(product.resolvedUnit.displayName) (\(thresholdDetails.source.displayName))"
@@ -96,3 +95,4 @@ struct ProductDetailView: View {
         return product.resolvedBrand
     }
 }
+

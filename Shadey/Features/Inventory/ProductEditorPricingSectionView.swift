@@ -24,7 +24,7 @@ struct ProductEditorPricingSectionView: View {
                 )
 
                 VStack(alignment: .leading, spacing: DesignSystem.Spacing.xSmall) {
-                    Text("Cost per \(viewModel.draft.unit.displayName)")
+                    Text("Cost per unit")
                         .font(DesignSystem.Typography.caption)
                         .foregroundStyle(DesignSystem.textSecondary)
                     Text(costPerUnitText)
@@ -45,9 +45,9 @@ struct ProductEditorPricingSectionView: View {
     }
 
     private var costPerUnitText: String {
-        guard let costPerUnit = viewModel.costPerUnit else {
+        guard let price = viewModel.draft.purchasePrice else {
             return "--"
         }
-        return costPerUnit.formatted(CurrencyFormat.inventory)
+        return price.formatted(CurrencyFormat.inventory)
     }
 }

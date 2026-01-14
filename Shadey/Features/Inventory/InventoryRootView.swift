@@ -26,7 +26,6 @@ struct InventoryRootView: View {
             adjustingProduct: $adjustingProduct,
             deletingProduct: $deletingProduct
         )
-        .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .scrollIndicators(.hidden)
         .background(DesignSystem.background)
@@ -39,10 +38,12 @@ struct InventoryRootView: View {
                     Button("Scan", systemImage: "barcode.viewfinder") {
                         showingScanner = true
                     }
+                    .accessibilityIdentifier("inventoryScanButton")
                     Button("Add", systemImage: "plus") {
                         addCategory = nil
                         showingAddProduct = true
                     }
+                    .accessibilityIdentifier("inventoryAddButton")
                 }
             }
             .searchable(text: $viewModel.searchText, prompt: "Search products")

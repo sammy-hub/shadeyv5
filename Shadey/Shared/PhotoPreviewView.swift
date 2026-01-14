@@ -3,12 +3,21 @@ import SwiftUI
 struct PhotoPreviewView: View {
     let label: String
     let imageData: Data?
+    let showsLabel: Bool
+
+    init(label: String, imageData: Data?, showsLabel: Bool = true) {
+        self.label = label
+        self.imageData = imageData
+        self.showsLabel = showsLabel
+    }
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(label)
-                .font(DesignSystem.Typography.subheadline)
-                .foregroundStyle(DesignSystem.textSecondary)
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.xSmall) {
+            if showsLabel {
+                Text(label)
+                    .font(DesignSystem.Typography.subheadline)
+                    .foregroundStyle(DesignSystem.textSecondary)
+            }
             if let imageData, let image = ImageDecoder.image(from: imageData) {
                 image
                     .resizable()

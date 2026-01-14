@@ -24,16 +24,18 @@ struct FormulaProductResultRowView: View {
                 }
             }
             Spacer()
-            VStack(alignment: .trailing, spacing: DesignSystem.Spacing.xSmall) {
+            HStack(spacing: DesignSystem.Spacing.small) {
                 Button("Add", systemImage: "plus") {
                     onAdd()
                 }
                 .buttonStyle(.bordered)
+                .accessibilityLabel("Add \(product.displayName)")
 
                 Button(isFavorite ? "Unfavorite" : "Favorite", systemImage: isFavorite ? "star.fill" : "star") {
                     onToggleFavorite()
                 }
                 .buttonStyle(.bordered)
+                .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
             }
         }
         .padding(.vertical, DesignSystem.Spacing.xSmall)
